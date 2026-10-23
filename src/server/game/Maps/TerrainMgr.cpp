@@ -244,7 +244,7 @@ void TerrainInfo::LoadMMap(int32 gx, int32 gy)
     if (mmapLoadResult)
         TC_LOG_DEBUG("mmaps.tiles", "MMAP loaded name:%s, id:%d, x:%d, y:%d (mmap rep.: x:%d, y:%d)", GetMapName(), GetId(), gx, gy, gx, gy);
     else
-        TC_LOG_WARN("mmaps.tiles", "Could not load MMAP name:%s, id:%d, x:%d, y:%d (mmap rep.: x:%d, y:%d)", GetMapName(), GetId(), gx, gy, gx, gy);
+        TC_LOG_DEBUG("mmaps.tiles", "MMAP unavailable name:%s, id:%d, x:%d, y:%d (mmap rep.: x:%d, y:%d)", GetMapName(), GetId(), gx, gy, gx, gy);
 }
 
 void TerrainInfo::UnloadMap(int32 gx, int32 gy)
