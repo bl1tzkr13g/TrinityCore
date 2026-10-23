@@ -3954,10 +3954,10 @@ AuctionHouseBot.Buyer.Recheck.Interval = 20
 #
 
 Appender.Console=1,3,0
-Appender.Server=2,2,0,Server.log,w
+Appender.Server=2,3,0,Server.log,w
 Appender.GM=2,2,15,gm/gm_%s.log
 Appender.DBErrors=2,2,0,DBErrors.log
-Appender.Network=2,1,0,Network.log,w
+Appender.Network=2,4,0,Network.log,w
 
 #  Logger config values: Given a logger "name"
 #    Logger.name
@@ -3977,14 +3977,14 @@ Appender.Network=2,1,0,Network.log,w
 #                     (Using spaces as separator).
 #
 
-Logger.root=5,Console Server
+Logger.root=3,Console Server
 Logger.server=3,Console Server
 Logger.commands.gm=3,Console GM
 Logger.scripts.hotswap=3,Console Server
 Logger.sql.sql=5,Console DBErrors
 Logger.sql.updates=3,Console Server
-Logger.network=1,Network
-Logger.network.opcode=1,Network
+Logger.network=4,Network
+Logger.network.opcode=4,Network
 #Logger.mmaps=3,Server
 
 #Logger.achievement=3,Console Server
