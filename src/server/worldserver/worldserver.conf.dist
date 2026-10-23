@@ -77,6 +77,18 @@ RealmID = 1
 DataDir = "."
 
 #
+#    MMap.ExcludedTiles
+#        Description: Comma-separated map grid tiles to skip when loading MMAP navigation data.
+#                     Each entry is MapID:X:Y, with X and Y in the range 0-63.
+#                     Entries apply only to the exact map ID; phased maps need their own entries.
+#                     Exclusions take effect after restarting the worldserver.
+#        Important:   Only exclude grids verified to have no usable terrain/navigation.
+#        Example:     "1:58:30,719:58:30,731:58:30,746:58:30,759:58:30,764:58:30"
+#        Default:     "" (no exclusions)
+#
+MMap.ExcludedTiles = ""
+
+#
 #    LogsDir
 #        Description: Logs directory setting.
 #        Important:   LogsDir needs to be quoted, as the string might contain space characters.
