@@ -32,6 +32,7 @@
 #include "VMapManager2.h"
 #include "World.h"
 #include <G3D/g3dmath.h>
+#include <limits>
 #include <regex>
 #include <set>
 #include <sstream>
@@ -270,7 +271,7 @@ namespace
                     unsigned long map = std::stoul(match[1].str());
                     unsigned long x = std::stoul(match[2].str());
                     unsigned long y = std::stoul(match[3].str());
-                    if (map > UINT32_MAX || x >= MAX_NUMBER_OF_GRIDS || y >= MAX_NUMBER_OF_GRIDS)
+                    if (map > std::numeric_limits<uint32>::max() || x >= MAX_NUMBER_OF_GRIDS || y >= MAX_NUMBER_OF_GRIDS)
                     {
                         TC_LOG_ERROR("mmaps.tiles", "Out-of-range MMap.ExcludedTiles entry '%s'", token.c_str());
                         continue;
