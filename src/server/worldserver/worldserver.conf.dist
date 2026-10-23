@@ -86,7 +86,7 @@ DataDir = "."
 #        Example:     "1:58:30,719:58:30,731:58:30,746:58:30,759:58:30,764:58:30"
 #        Default:     "" (no exclusions)
 #
-MMap.ExcludedTiles = ""
+MMap.ExcludedTiles = "1:58:30,719:58:30,731:58:30,746:58:30,759:58:30,764:58:30"
 
 #
 #    LogsDir
@@ -3002,8 +3002,9 @@ ArenaLog.ExtendedInfo = 0
 #    Network.Threads
 #        Description: Number of threads for network.
 #         Default:    1 - (Recommended 1 thread per 1000 connections)
+#         Custom:     4 - (Four network worker threads; not CPU affinity)
 
-Network.Threads = 1
+Network.Threads = 4
 
 #
 #    Network.OutKBuff
@@ -3956,6 +3957,7 @@ Appender.Console=1,3,0
 Appender.Server=2,2,0,Server.log,w
 Appender.GM=2,2,15,gm/gm_%s.log
 Appender.DBErrors=2,2,0,DBErrors.log
+Appender.Network=2,1,0,Network.log,w
 
 #  Logger config values: Given a logger "name"
 #    Logger.name
@@ -3981,6 +3983,8 @@ Logger.commands.gm=3,Console GM
 Logger.scripts.hotswap=3,Console Server
 Logger.sql.sql=5,Console DBErrors
 Logger.sql.updates=3,Console Server
+Logger.network=1,Network
+Logger.network.opcode=1,Network
 #Logger.mmaps=3,Server
 
 #Logger.achievement=3,Console Server
