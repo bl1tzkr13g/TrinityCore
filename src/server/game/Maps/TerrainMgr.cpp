@@ -16,6 +16,7 @@
  */
 
 #include "TerrainMgr.h"
+#include "Config.h"
 #include "DBCStores.h"
 #include "DisableMgr.h"
 #include "DynamicTree.h"
@@ -31,6 +32,10 @@
 #include "VMapManager2.h"
 #include "World.h"
 #include <G3D/g3dmath.h>
+#include <regex>
+#include <set>
+#include <sstream>
+#include <tuple>
 
 TerrainInfo::TerrainInfo(uint32 mapId) : _mapId(mapId), _parentTerrain(nullptr), _cleanupTimer(randtime(CleanupInterval / 2, CleanupInterval).count())
 {
@@ -234,9 +239,65 @@ void TerrainInfo::LoadVMap(int32 gx, int32 gy)
     }
 }
 
+namespace
+{
+    // Read once at startup/first use. Changes require a worldserver restart.
+    bool IsExcludedMMapTile(uint32 mapId, int32 gx, int32 gy)
+    {
+        using Tile = std::tuple<uint32, int32, int32>;
+        static std::set<Tile> const excluded = []
+        {
+            std::set<Tile> tiles;
+            std::string const setting = sConfigMgr->GetStringDefault("MMap.ExcludedTiles", "");
+            std::istringstream input(setting);
+            std::string token;
+            std::regex const pattern(R"(^\s*([0-9]+):([0-9]+):([0-9]+)\s*$)");
+
+            while (std::getline(input, token, ','))
+            {
+                if (token.find_first_not_of(" \t\r\n") == std::string::npos)
+                    continue;
+
+                std::smatch match;
+                if (!std::regex_match(token, match, pattern))
+                {
+                    TC_LOG_ERROR("mmaps.tiles", "Invalid MMap.ExcludedTiles entry '%s' (expected MapID:X:Y)", token.c_str());
+                    continue;
+                }
+
+                try
+                {
+                    unsigned long map = std::stoul(match[1].str());
+                    unsigned long x = std::stoul(match[2].str());
+                    unsigned long y = std::stoul(match[3].str());
+                    if (map > UINT32_MAX || x >= MAX_NUMBER_OF_GRIDS || y >= MAX_NUMBER_OF_GRIDS)
+                    {
+                        TC_LOG_ERROR("mmaps.tiles", "Out-of-range MMap.ExcludedTiles entry '%s'", token.c_str());
+                        continue;
+                    }
+
+                    tiles.emplace(uint32(map), int32(x), int32(y));
+                }
+                catch (std::exception const&)
+                {
+                    TC_LOG_ERROR("mmaps.tiles", "Invalid numeric MMap.ExcludedTiles entry '%s'", token.c_str());
+                }
+            }
+
+            TC_LOG_INFO("mmaps.tiles", "Configured %zu excluded MMAP tiles", tiles.size());
+            return tiles;
+        }();
+
+        return excluded.find(Tile{ mapId, gx, gy }) != excluded.end();
+    }
+}
+
 void TerrainInfo::LoadMMap(int32 gx, int32 gy)
 {
     if (!DisableMgr::IsPathfindingEnabled(GetId()))
+        return;
+
+    if (IsExcludedMMapTile(GetId(), gx, gy))
         return;
 
     bool mmapLoadResult = MMAP::MMapFactory::createOrGetMMapManager()->loadMap(sWorld->GetDataPath(), GetId(), gx, gy);
