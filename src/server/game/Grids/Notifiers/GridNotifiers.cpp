@@ -23,6 +23,8 @@
 #include "Transport.h"
 #include "ObjectAccessor.h"
 #include "CellImpl.h"
+#include "Log.h"
+#include <chrono>
 
 using namespace Trinity;
 
@@ -218,8 +220,18 @@ void DelayedUnitRelocation::Visit(CreatureMapType &m)
         TypeContainerVisitor<CreatureRelocationNotifier, WorldTypeMapContainer > c2world_relocation(relocate);
         TypeContainerVisitor<CreatureRelocationNotifier, GridTypeMapContainer >  c2grid_relocation(relocate);
 
+        auto worldStart = std::chrono::steady_clock::now();
         cell.Visit(p, c2world_relocation, i_map, *unit, i_radius);
+        auto gridStart = std::chrono::steady_clock::now();
         cell.Visit(p, c2grid_relocation, i_map, *unit, i_radius);
+        auto finish = std::chrono::steady_clock::now();
+
+        auto worldMs = std::chrono::duration_cast<std::chrono::milliseconds>(gridStart - worldStart).count();
+        auto gridMs = std::chrono::duration_cast<std::chrono::milliseconds>(finish - gridStart).count();
+        if (worldMs + gridMs >= 100)
+            TC_LOG_INFO("misc", "RELOCATION_CREATURE_SLOW map=%u entry=%u guid=%llu worldMs=%lld gridMs=%lld",
+                i_map.GetId(), unit->GetEntry(), static_cast<unsigned long long>(unit->GetGUID().GetCounter()),
+                static_cast<long long>(worldMs), static_cast<long long>(gridMs));
     }
 }
 
@@ -237,8 +249,18 @@ void DelayedUnitRelocation::Visit(PlayerMapType &m)
             continue;
 
         PlayerRelocationNotifier relocate(*player);
+        auto visitStart = std::chrono::steady_clock::now();
         Cell::VisitAllObjects(viewPoint, relocate, i_radius, false);
+        auto sendStart = std::chrono::steady_clock::now();
         relocate.SendToSelf();
+        auto finish = std::chrono::steady_clock::now();
+
+        auto visitMs = std::chrono::duration_cast<std::chrono::milliseconds>(sendStart - visitStart).count();
+        auto sendMs = std::chrono::duration_cast<std::chrono::milliseconds>(finish - sendStart).count();
+        if (visitMs + sendMs >= 100)
+            TC_LOG_INFO("misc", "RELOCATION_PLAYER_SLOW map=%u guid=%llu visitMs=%lld sendMs=%lld",
+                i_map.GetId(), static_cast<unsigned long long>(player->GetGUID().GetCounter()),
+                static_cast<long long>(visitMs), static_cast<long long>(sendMs));
     }
 }
 
