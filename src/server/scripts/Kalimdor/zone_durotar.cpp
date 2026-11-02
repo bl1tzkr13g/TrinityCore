@@ -16,6 +16,7 @@
  */
 
 #include "ScriptMgr.h"
+#include "ScriptedGossip.h"
 #include "CreatureAIImpl.h"
 #include "Player.h"
 #include "ScriptedCreature.h"
@@ -79,6 +80,95 @@ class spell_zuni_lvl_1_trigger_aura : public SpellScript
         OnEffectHitTarget.Register(&spell_zuni_lvl_1_trigger_aura::HandleDummy, EFFECT_0, SPELL_EFFECT_APPLY_AURA);
     }
 };
+
+enum ProvingPit
+{
+    NPC_CAPTIVE_SPITESCALE_SCOUT = 38142,
+    NPC_DARKSPEAR_JAILOR = 39062,
+    GOSSIP_MENU_PROVING_PIT = 10974,
+    ACTION_BEGIN_PROVING_PIT = 1
+};
+
+bool HasProvingPitQuest(Player* player)
+{
+    uint32 const questIds[] = { 24642, 24754, 24762, 24768, 24774, 24780, 24786, 26276 };
+    for (uint32 questId : questIds)
+        if (player->GetQuestStatus(questId) == QUEST_STATUS_INCOMPLETE)
+            return true;
+
+    return false;
+}
+
+class npc_captive_spitescale_scout : public CreatureScript
+{
+public:
+    npc_captive_spitescale_scout() : CreatureScript("npc_captive_spitescale_scout") { }
+
+    struct npc_captive_spitescale_scoutAI : public ScriptedAI
+    {
+        npc_captive_spitescale_scoutAI(Creature* creature) : ScriptedAI(creature) { }
+
+        void Reset() override
+        {
+            me->SetImmuneToPC(true);
+        }
+
+        void DoAction(int32 action) override
+        {
+            if (action == ACTION_BEGIN_PROVING_PIT)
+                me->SetImmuneToPC(false);
+        }
+
+        void UpdateAI(uint32 /*diff*/) override
+        {
+            if (!UpdateVictim())
+                return;
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const override
+    {
+        return new npc_captive_spitescale_scoutAI(creature);
+    }
+};
+
+class npc_darkspear_jailor : public CreatureScript
+{
+public:
+    npc_darkspear_jailor() : CreatureScript("npc_darkspear_jailor") { }
+
+    struct npc_darkspear_jailorAI : public ScriptedAI
+    {
+        npc_darkspear_jailorAI(Creature* creature) : ScriptedAI(creature) { }
+
+        bool GossipSelect(Player* player, uint32 menuId, uint32 gossipListId) override
+        {
+            if (menuId != GOSSIP_MENU_PROVING_PIT || gossipListId > 1)
+                return false;
+
+            CloseGossipMenuFor(player);
+
+            if (!HasProvingPitQuest(player))
+                return true;
+
+            Creature* scout = me->FindNearestCreature(NPC_CAPTIVE_SPITESCALE_SCOUT, 30.0f, true);
+            if (!scout || scout->IsInCombat())
+                return true;
+
+            scout->AI()->DoAction(ACTION_BEGIN_PROVING_PIT);
+            scout->AI()->AttackStart(player);
+            player->KilledMonsterCredit(NPC_DARKSPEAR_JAILOR);
+            return true;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const override
+    {
+        return new npc_darkspear_jailorAI(creature);
+    }
+};
 }
 
 void AddSC_durotar()
@@ -86,4 +176,6 @@ void AddSC_durotar()
     using namespace Durotar;
     new spell_voodoo();
     RegisterSpellScript(spell_zuni_lvl_1_trigger_aura);
+    new npc_darkspear_jailor();
+    new npc_captive_spitescale_scout();
 }
