@@ -1829,7 +1829,7 @@ class spell_gen_feign_death_all_flags_no_uninteractible : public AuraScript
     {
         Unit* target = GetTarget();
         target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-        target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG2_FEIGN_DEATH);
+        target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
         target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREVENT_EMOTES_FROM_CHAT_TEXT);
         target->SetImmuneToAll(true);
 
@@ -1841,7 +1841,7 @@ class spell_gen_feign_death_all_flags_no_uninteractible : public AuraScript
     {
         Unit* target = GetTarget();
         target->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-        target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG2_FEIGN_DEATH);
+        target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
         target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREVENT_EMOTES_FROM_CHAT_TEXT);
         target->SetImmuneToAll(false);
 
@@ -5496,3 +5496,4 @@ void AddSC_generic_spell_scripts()
     RegisterSpellScript(spell_gen_polymorph_cast_visual);
     RegisterSpellScript(spell_gen_prevent_emotes);
 }
+
