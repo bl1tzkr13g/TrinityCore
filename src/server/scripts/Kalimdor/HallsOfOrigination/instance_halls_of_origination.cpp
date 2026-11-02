@@ -381,14 +381,14 @@ class instance_halls_of_origination : public InstanceMapScript
                             // Camels cannot be mounted during the boss fight.
                             for (ObjectGuid guid : _hooCamelGUIDs)
                                 if (Creature* camel = instance->GetCreature(guid))
-                                    camel->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                                    camel->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                         }
                         else
                         {
                             // Make camels mountable again.
                             for (ObjectGuid guid : _hooCamelGUIDs)
                                 if (Creature* camel = instance->GetCreature(guid))
-                                    camel->SetFlag(UNIT_FIELD_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                                    camel->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
 
                             for (ObjectGuid guid : _beetleStalkerGUIDS)
                                 if (Creature* beetleStalker = instance->GetCreature(guid))
