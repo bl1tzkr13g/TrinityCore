@@ -77,6 +77,18 @@ RealmID = 1
 DataDir = "."
 
 #
+#    MMap.ExcludedTiles
+#        Description: Comma-separated map grid tiles to skip when loading MMAP navigation data.
+#                     Each entry is MapID:X:Y, with X and Y in the range 0-63.
+#                     Entries apply only to the exact map ID; phased maps need their own entries.
+#                     Exclusions take effect after restarting the worldserver.
+#        Important:   Only exclude grids verified to have no usable terrain/navigation.
+#        Example:     "1:58:30,719:58:30,731:58:30,746:58:30,759:58:30,764:58:30"
+#        Default:     "" (no exclusions)
+#
+MMap.ExcludedTiles = "1:17:29,1:26:20,1:30:43,1:40:53,1:55:29,1:55:30,1:55:31,1:56:29,1:56:30,1:56:31,1:57:27,1:57:28,1:57:29,1:57:30,1:57:31,1:57:32,1:57:33,1:58:27,1:58:28,1:58:29,1:58:30,1:58:31,1:58:32,1:58:33,1:59:27,1:59:28,1:59:29,1:59:30,1:59:31,1:59:32,1:59:33,1:60:29,1:60:30,1:60:31,1:61:29,1:61:30,1:61:31,719:17:29,719:26:20,719:30:43,719:40:53,719:55:29,719:55:30,719:55:31,719:56:29,719:56:30,719:56:31,719:57:27,719:57:28,719:57:29,719:57:30,719:57:31,719:57:32,719:57:33,719:58:27,719:58:28,719:58:29,719:58:30,719:58:31,719:58:32,719:58:33,719:59:27,719:59:28,719:59:29,719:59:30,719:59:31,719:59:32,719:59:33,719:60:29,719:60:30,719:60:31,719:61:29,719:61:30,719:61:31,731:17:29,731:26:20,731:30:43,731:40:53,731:55:29,731:55:30,731:55:31,731:56:29,731:56:30,731:56:31,731:57:27,731:57:28,731:57:29,731:57:30,731:57:31,731:57:32,731:57:33,731:58:27,731:58:28,731:58:29,731:58:30,731:58:31,731:58:32,731:58:33,731:59:27,731:59:28,731:59:29,731:59:30,731:59:31,731:59:32,731:59:33,731:60:29,731:60:30,731:60:31,731:61:29,731:61:30,731:61:31,746:17:29,746:26:20,746:30:43,746:40:53,746:55:29,746:55:30,746:55:31,746:56:29,746:56:30,746:56:31,746:57:27,746:57:28,746:57:29,746:57:30,746:57:31,746:57:32,746:57:33,746:58:27,746:58:28,746:58:29,746:58:30,746:58:31,746:58:32,746:58:33,746:59:27,746:59:28,746:59:29,746:59:30,746:59:31,746:59:32,746:59:33,746:60:29,746:60:30,746:60:31,746:61:29,746:61:30,746:61:31,759:17:29,759:26:20,759:30:43,759:40:53,759:55:29,759:55:30,759:55:31,759:56:29,759:56:30,759:56:31,759:57:27,759:57:28,759:57:29,759:57:30,759:57:31,759:57:32,759:57:33,759:58:27,759:58:28,759:58:29,759:58:30,759:58:31,759:58:32,759:58:33,759:59:27,759:59:28,759:59:29,759:59:30,759:59:31,759:59:32,759:59:33,759:60:29,759:60:30,759:60:31,759:61:29,759:61:30,759:61:31,764:17:29,764:26:20,764:30:43,764:40:53,764:55:29,764:55:30,764:55:31,764:56:29,764:56:30,764:56:31,764:57:27,764:57:28,764:57:29,764:57:30,764:57:31,764:57:32,764:57:33,764:58:27,764:58:28,764:58:29,764:58:30,764:58:31,764:58:32,764:58:33,764:59:27,764:59:28,764:59:29,764:59:30,764:59:31,764:59:32,764:59:33,764:60:29,764:60:30,764:60:31,764:61:29,764:61:30,764:61:31"
+
+#
 #    LogsDir
 #        Description: Logs directory setting.
 #        Important:   LogsDir needs to be quoted, as the string might contain space characters.
@@ -2990,8 +3002,9 @@ ArenaLog.ExtendedInfo = 0
 #    Network.Threads
 #        Description: Number of threads for network.
 #         Default:    1 - (Recommended 1 thread per 1000 connections)
+#         Custom:     4 - (Four network worker threads; not CPU affinity)
 
-Network.Threads = 1
+Network.Threads = 4
 
 #
 #    Network.OutKBuff
@@ -3941,9 +3954,10 @@ AuctionHouseBot.Buyer.Recheck.Interval = 20
 #
 
 Appender.Console=1,3,0
-Appender.Server=2,2,0,Server.log,w
+Appender.Server=2,3,0,Server.log,w
 Appender.GM=2,2,15,gm/gm_%s.log
 Appender.DBErrors=2,2,0,DBErrors.log
+Appender.Network=2,4,0,Network.log,w
 
 #  Logger config values: Given a logger "name"
 #    Logger.name
@@ -3963,12 +3977,14 @@ Appender.DBErrors=2,2,0,DBErrors.log
 #                     (Using spaces as separator).
 #
 
-Logger.root=5,Console Server
+Logger.root=3,Console Server
 Logger.server=3,Console Server
 Logger.commands.gm=3,Console GM
 Logger.scripts.hotswap=3,Console Server
 Logger.sql.sql=5,Console DBErrors
 Logger.sql.updates=3,Console Server
+Logger.network=4,Network
+Logger.network.opcode=4,Network
 #Logger.mmaps=3,Server
 
 #Logger.achievement=3,Console Server
